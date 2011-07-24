@@ -1,17 +1,16 @@
-# The Wall
+# The Hall
 
-Online demo: http://thewall.agilityjs.com
+This is my attempt to port the backend of [Artur Adip](http://github.com/arturadip)'s demo app "The Wall" to [Haskell](http://haskell.org) using the [Snap](http://snapframework.com) webapp framework.
 
 The Wall is an [Agility.js](http://agilityjs.com) example app.  It lets you write on a virtual wall, anonymously. It uses MongoDB as the data store.
 
-The app is under `public/app.js`, and contains the entire code. The [Skeleton boilerplate](http://www.getskeleton.com/) is used to make things look pretty.
-
 ## Getting started
 
-To start the server you'll need `node.js`. Run:
 
-    cd thewall/
-    npm install
-    node server.js
 
-That's all. Have fun!
+
+## TODO
+
+ * fix bug with the time (shows as 41 years ago)
+ * fix bug by json encoding msg bodies (now a newline breaks the query)
+ * implement delete method
