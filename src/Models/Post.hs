@@ -27,7 +27,7 @@ import           Numeric (showHex, readHex)
 -- { "msg":"bing", "avatarPath":"img/avatar_frankenstein_halloween_monster_icon.png",
 --   "name":"yarr", "time":"1311410914962", "_id":"4e2a8ae2d3cacc01000000b2" }
 data Post = Post { pId         :: Maybe ObjectId
-                 , pCreatedAt  :: UTCTime
+                 , pCreatedAt  :: Int
                  , pBody       :: BS.ByteString
                  , pAuthor     :: BS.ByteString
                  , pAvatarPath :: BS.ByteString }
@@ -54,11 +54,9 @@ postToJSON p = BS.concat [
     B8.pack "{",
     (case pId p of Just x -> BS.concat [B8.pack "\"_id\":\"", objid2bs' x, B8.pack "\", "]
                    Nothing -> B8.pack ""),
-    B8.pack "\"createdAt\":\"",
-      B8.pack $ show $ truncate (utcTimeToPOSIXSeconds $ pCreatedAt p),
-      B8.pack "\", ",
-    B8.pack $ "\"body\":\"", pBody p, B8.pack "\", ",
-    B8.pack $ "\"author\":\"", pAuthor p, B8.pack "\", ",
+    B8.pack "\"time\":\"", B8.pack $ show $ pCreatedAt p, B8.pack "\", ",
+    B8.pack $ "\"msg\":\"", pBody p, B8.pack "\", ",
+    B8.pack $ "\"name\":\"", pAuthor p, B8.pack "\", ",
     B8.pack $ "\"avatarPath\":\"", pAvatarPath p, B8.pack "\"}"
   ]
 
@@ -67,13 +65,9 @@ postsToJSON ps = BS.concat $ [ B8.pack "[",
                                BS.concat $ intersperse (B8.pack ", ") (map postToJSON ps),
                                B8.pack "]" ]
 
-emptyPost = do
-  now <- getCurrentTime
-  return $ val $ Post Nothing now "1" "2" "3"
-
 maxSize = 25
 
-getPosts :: Maybe UTCTime -> Application [Post]
+getPosts :: Maybe Int -> Application [Post]
 getPosts since = do
   c <- DB.withDB $ DB.find $
    ( DB.select ( case since of Just ts -> [ "createdAt" =: ["$gt" =: ts] ]

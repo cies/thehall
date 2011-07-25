@@ -30,7 +30,7 @@ import           Control.Exception --(evaluate)
 import           Control.Monad
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Time.Clock.POSIX -- (posixSecondsToUTCTime)
-import           Data.Time.Clock (getCurrentTime)
+{- import           Data.Time.Clock (getCurrentTime)-}
 
 import           Models.Post
 
@@ -46,25 +46,24 @@ postsGet = do
                                     evaluate 0)
       -- writeBS $ B8.pack ("//" ++ (show n) ++ "//")
       case n > 1 of
-        True  -> continueWith $
-          Just $ posixSecondsToUTCTime
-            (fromInteger (fromIntegral n :: Integer) :: POSIXTime)
+        True  -> continueWith $ Just (fromIntegral n :: Int)
         False -> continueWith Nothing
     Nothing -> continueWith Nothing
   where
     {- setResponse x = (writeBS . B8.pack . show) =<< getPosts x-}
     {- setResponse x = (writeBS . B8.pack . encodeJSON) =<< getPosts x-}
-    continueWith x = (writeBS . postsToJSON) =<< getPosts x
+    continueWith x = (writeBS . postsToJSON . reverse) =<< getPosts x
 
 postsPost :: Application ()
 postsPost = do
-  g <- getParam "body"
-  h <- getParam "author"
+  g <- getParam "msg"
+  h <- getParam "name"
   i <- getParam "avatarPath"
   case (g,h,i) of
        (Just body, Just author, Just avatarPath) -> do
-         now <- liftIO $ getCurrentTime
-         let post = Post Nothing now body author avatarPath
+         now <- liftIO $ getPOSIXTime
+         let epoch = floor $ (100000 *) $ fromRational $ toRational $ now
+         let post = Post Nothing epoch body author avatarPath
          oid <- savePost post
          modifyResponse $ setResponseStatus 201 "Post created"
          writeBS $ BS.concat ["{\"id\":\"", oid, "\"}"]
@@ -74,11 +73,11 @@ postsDelete :: Application ()
 postsDelete = writeText "Not implemented"
 
 site :: Application ()
-site = route [ ("/api/posts",     method GET    $ postsGet)
-             , ("/api/posts",     method POST   $ postsPost)
-             , ("/api/post_post", method GET    $ postsPost)  -- convenience
-             , ("/api/posts/:id", method DELETE $ postsDelete)
-             , ("/api/post_del/:id", method GET    $ postsDelete)
+site = route [ ("/api/posts",        method GET    $ postsGet)
+             , ("/api/posts",        method POST   $ postsPost)
+             , ("/api/post_post",    method GET    $ postsPost)  -- convenience
+             , ("/api/posts/:id",    method DELETE $ postsDelete)
+             , ("/api/post_del/:id", method GET    $ postsDelete)  -- convenience
              ]
        <|> serveDirectory "resources/static"
 

@@ -11,6 +11,5 @@ The Wall is an [Agility.js](http://agilityjs.com) example app.  It lets you writ
 
 ## TODO
 
- * fix bug with the time (shows as 41 years ago)
  * fix bug by json encoding msg bodies (now a newline breaks the query)
  * implement delete method
